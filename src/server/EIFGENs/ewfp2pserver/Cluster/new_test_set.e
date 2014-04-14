@@ -83,7 +83,7 @@ feature -- Test routines
 
 	magic_cookie_verification_test
 		do
-			assert ("Length processing fails.", testee.verify_magic_cookie (packet1.subarray (5, 8)))
+			assert ("Magic cookie verification fails.", testee.verify_magic_cookie (packet1.subarray (5, 8)))
 		end
 
 	transaction_id_processing_test
