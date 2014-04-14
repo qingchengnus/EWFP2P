@@ -16,9 +16,9 @@ feature
 			if
 				first_two_bits = 0b11000000
 			then
-				RESULT := 0
-			else
 				RESULT := 1
+			else
+				RESULT := 0
 			end
 		end
 
@@ -58,14 +58,14 @@ feature
 		require
 			two_bytes_received: bytes.count = 2
 		do
-			RESULT := bytes.at (2) * 256 + bytes.at (1)
+			RESULT := bytes.at (3) * 256 + bytes.at (4)
 		end
 
 	verify_magic_cookie(bytes: ARRAY[NATURAL_8]): BOOLEAN
 		require
 			four_bytes_received: bytes.count = 4
 		do
-			RESULT := bytes.at (1) = 0x21 and bytes.at (2) = 0x12 and bytes.at (3) = 0xA4 and bytes.at (4) = 0x42
+			RESULT := bytes.at (5) = 0x21 and bytes.at (6) = 0x12 and bytes.at (7) = 0xA4 and bytes.at (8) = 0x42
 		end
 
 	get_transaction_id(bytes: ARRAY[NATURAL_8]): ARRAY[NATURAL_32]
@@ -74,13 +74,13 @@ feature
 		local
 			i: INTEGER
 		do
-			create RESULT.make_filled (0, 1, 4)
+			create RESULT.make_filled (0, 1, 3)
 			from
-				i := 0
+				i := 1
 			until
 				i = 4
 			loop
-				RESULT.put (bytes[i].as_natural_32 * 256 * 256 * 256 + bytes[i + 1].as_natural_32 * 256 * 256 + bytes[i + 2].as_natural_32 * 256 + bytes[i + 3].as_natural_32 , i)
+				RESULT.put (bytes[4 * i + 5].as_natural_32 * 256 * 256 * 256 + bytes[4 * i + 6].as_natural_32 * 256 * 256 + bytes[4 * i + 7].as_natural_32 * 256 + bytes[4 * i + 8].as_natural_32 , i)
 				i := i + 1
 			end
 		end
