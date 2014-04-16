@@ -32,7 +32,7 @@ feature
 		local
 			count: INTEGER
 			socket: detachable NETWORK_STREAM_SOCKET
-			header_parser: HEADERPARSER
+			header_parser: HEADER_PARSER
 		do
 			create socket.make_server_by_port(port)
 			socket.listen (queue)
@@ -56,30 +56,23 @@ feature
 		require
 			soc_not_void: soc /= Void
 		local
---			count: INTEGER
+			count: INTEGER
 			msg: detachable PACKET
 		do
 			soc.accept
 			if attached soc.accepted as soc2 then
---				if attached {INTEGER_8} retrieved (soc2.read_integer_8) as packet then
---					from
---						count := 0
---					until
---						count = packet.count
---					loop
---						print (packet.at (count))
---						count := count + 1
---					end
+				if attached {MY_PACKET} retrieved (soc2) as packet then
+					from
+						count := 0
+					until
+						count = packet.count
+					loop
+						print (packet.at (count))
+						count := count + 1
+					end
 
---				end
---				soc2.close
-				msg := soc2.read (2)
-				if
-					msg /= Void
-				then
-					print(msg.at (1))
-					print(msg.at (2))
 				end
+				soc2.close
 
 			end
 		end

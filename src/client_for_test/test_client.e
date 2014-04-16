@@ -33,18 +33,13 @@ feature {NONE} -- Initialization
 		require
 			socket_not_void: soc1 /= Void
 		local
-			pkt: PACKET
+			pkt: MY_PACKET
 		do
---			io.put_integer_8 (1)
---			io.new_line
---			io.put_integer_8 (2)
---			io.new_line
---			io.put_integer_8 (3)
---			io.new_line
-			create pkt.make (2)
-			pkt.put_element ('q', 0)
-			pkt.put_element ('c', 1)
-			soc1.write (pkt)
+			create pkt.make(0,2)
+			pkt.put (0, 0)
+			pkt.put (1, 1)
+			pkt.put (2, 2)
+			pkt.independent_store (soc1)
 
 		end
 

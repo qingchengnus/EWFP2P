@@ -19,7 +19,7 @@ inherit
 
 feature
 	packet1: ARRAY[NATURAL_8]
-	testee: HEADERPARSER
+	testee: HEADER_PARSER
 feature {NONE} -- Events
 
 	on_prepare

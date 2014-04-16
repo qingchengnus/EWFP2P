@@ -5,7 +5,7 @@ note
 	revision: "$Revision$"
 
 class
-	HEADERPARSER
+	HEADER_PARSER
 
 feature
 	demultiplex(first_byte: NATURAL_8): INTEGER
