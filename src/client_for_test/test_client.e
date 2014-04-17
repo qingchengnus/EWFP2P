@@ -19,11 +19,26 @@ feature {NONE} -- Initialization
 			-- Run application.
 		local
 			soc1: detachable NETWORK_STREAM_SOCKET
+			addr: NETWORK_SOCKET_ADDRESS
 		do
 			create soc1.make_client_by_port (8888, "localhost")
+			create addr.make_any_local (9999)
+			soc1.set_address (addr)
+			soc1.bind
 			soc1.connect
+
+
 			process(soc1)
+
+			if attached soc1.address as my_addr then
+				print("my port is ")
+				print(my_addr.port)
+			end
+
 			soc1.cleanup
+
+
+
 		rescue
             if soc1 /= Void then
                 soc1.cleanup

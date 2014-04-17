@@ -20,7 +20,7 @@ feature {NONE} -- Initialization
 			-- Run application.
 		do
 			--| Add your code here
-			listen(8888, 1)
+			listen(8888, 5)
 		end
 
 
@@ -39,7 +39,7 @@ feature
 			from
 				count := 0
 			until
-				count = 1
+				count = 5
 			loop
 				process(socket)
 				count := count + 1
@@ -57,7 +57,6 @@ feature
 			soc_not_void: soc /= Void
 		local
 			count: INTEGER
-			msg: detachable PACKET
 		do
 			soc.accept
 			if attached soc.accepted as soc2 then
@@ -72,9 +71,18 @@ feature
 					end
 
 				end
+
+				if attached soc2.peer_address as net_addr then
+					print("peer ip is ")
+					print(net_addr.host_address.host_address)
+					print("peer port is ")
+					print(net_addr.port)
+				end
 				soc2.close
 
 			end
+		rescue
+			print("unknow exception happens")
 		end
 feature
 	valid_port(port: INTEGER): BOOLEAN
