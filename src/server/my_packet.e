@@ -17,7 +17,6 @@ inherit
         end
 
 create
-
-    make
+	make_from_array, make_filled
 
 end
