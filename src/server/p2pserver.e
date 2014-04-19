@@ -20,6 +20,9 @@ feature {NONE} -- Initialization
 			-- Run application.
 		do
 			--| Add your code here
+			create packet_processor.make
+			create response_generator
+
 			listen(8888, 5)
 		end
 
@@ -32,7 +35,6 @@ feature
 		local
 			count: INTEGER
 			socket: detachable NETWORK_STREAM_SOCKET
-			header_parser: HEADER_PARSER
 		do
 			create socket.make_server_by_port(port)
 			socket.listen (queue)
@@ -56,20 +58,19 @@ feature
 		require
 			soc_not_void: soc /= Void
 		local
-			count: INTEGER
+			current_request: REQUEST
+			current_response: MY_PACKET
 		do
 			soc.accept
 			if attached soc.accepted as soc2 then
 				if attached {MY_PACKET} retrieved (soc2) as packet then
-					from
-						count := 0
-					until
-						count = packet.count
-					loop
-						print (packet.at (count))
-						count := count + 1
+					current_request := packet_processor.process_packet(packet)
+					if
+						current_request.is_valid
+					then
+						current_response := response_generator.generate_response(current_request)
+						current_response.independent_store (soc2)
 					end
-
 				end
 
 				if attached soc2.peer_address as net_addr then
@@ -85,13 +86,16 @@ feature
 			print("unknow exception happens")
 		end
 feature
+
+	packet_processor: PACKET_PROCESS_MODULE
+	response_generator: RESPONSE_GENERATE_MODULE
 	valid_port(port: INTEGER): BOOLEAN
-	do
-		RESULT := (port > 1023)
-	end
+		do
+			RESULT := (port > 1023)
+		end
 
 	valid_queue(queue: INTEGER): BOOLEAN
-	do
-		RESULT := (queue > 0)
-	end
+		do
+			RESULT := (queue > 0)
+		end
 end

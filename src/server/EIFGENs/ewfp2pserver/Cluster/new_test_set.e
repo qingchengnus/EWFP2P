@@ -88,10 +88,7 @@ feature -- Test routines
 
 	transaction_id_processing_test
 		do
-			assert ("Incorrect number of results", testee.get_transaction_id.count = 3)
-			assert ("Incorrect first result", testee.get_transaction_id.at (0) = 0x2AB43368)
-			assert ("Incorrect second result", testee.get_transaction_id.at (1) = 0x6EFFD567)
-			assert ("Incorrect third result", testee.get_transaction_id.at (2) = 0x0CAC1259)
+			assert ("Incorrect transaction id.", testee.get_transaction_id.is_equal ("2AB433686EFFD5670CAC1259"))
 		end
 end
 
