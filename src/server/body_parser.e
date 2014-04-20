@@ -43,7 +43,14 @@ feature {ANY}
 				RESULT.put (current_attribute, i)
 				i := i + 1
 				count := count + 4
-				count := count + (current_length // 4 + 1) * 4
+				if
+					current_length - (current_length // 4) * 4 = 0
+				then
+					count := count + current_length
+				else
+					count := count + (current_length // 4 + 1) * 4
+				end
+
 			end
 		end
 feature {NONE}
