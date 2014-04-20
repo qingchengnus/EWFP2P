@@ -12,18 +12,21 @@ create
 feature {ANY}
 	make
 		do
-			create validator
+			create p_validator
+			create r_generator
 		end
 	process_packet(packet: MY_PACKET): REQUEST
+
 		do
 			if
-				validator.validate_packet (packet)
+				p_validator.validate_packet (packet)
 			then
 				create RESULT.make_invalid
 			else
-				
+				RESULT := r_generator.generate_request(packet)
 			end
 		end
 feature {NONE}
-	validator: PACKET_VALIDATOR
+	p_validator: PACKET_VALIDATOR
+	r_generator: REQUEST_GENERATOR
 end
