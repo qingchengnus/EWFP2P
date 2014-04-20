@@ -19,8 +19,32 @@ feature {ANY}
 		end
 
 	get_attributes: ARRAY[MY_ATTRIBUTE]
-		do
+		local
+			current_type: NATURAL_16
+			current_length: INTEGER
+			current_value: ARRAY[NATURAL_8]
+			current_attribute: MY_ATTRIBUTE
+			count: INTEGER
+			i: INTEGER
 
+		do
+			create RESULT.make_empty
+			from
+				count := 0
+				i := 0
+			until
+				count = current_body.count
+			loop
+				current_type := current_body.at (count).as_natural_16 * 256 + current_body.at (count + 1).as_natural_16
+				current_length := current_body.at (count + 2).as_integer_32 * 256 + current_body.at (count + 3).as_integer_32
+				current_value := current_body.subarray (count + 4, count + 3 + current_length)
+				current_value.rebase (0)
+				create current_attribute.make (current_type, current_value)
+				RESULT.put (current_attribute, i)
+				i := i + 1
+				count := count + 4
+				count := count + (current_length // 4 + 1) * 4
+			end
 		end
 feature {NONE}
 	current_body: ARRAY[NATURAL_8]
