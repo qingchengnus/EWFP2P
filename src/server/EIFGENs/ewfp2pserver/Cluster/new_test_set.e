@@ -81,10 +81,10 @@ feature -- Test routines
 			assert ("Length processing fails.", testee.get_length = 720)
 		end
 
-	magic_cookie_verification_test
-		do
-			assert ("Magic cookie verification fails.", testee.verify_magic_cookie)
-		end
+--	magic_cookie_verification_test
+--		do
+--			assert ("Magic cookie verification fails.", testee.verify_magic_cookie)
+--		end
 
 	transaction_id_processing_test
 		do

@@ -21,7 +21,7 @@ feature {NONE} -- Initialization
 		do
 			--| Add your code here
 			create packet_processor.make
-			create response_generator
+			create message_processor
 
 			listen(8888, 5)
 		end
@@ -58,17 +58,22 @@ feature
 		require
 			soc_not_void: soc /= Void
 		local
-			current_request: REQUEST
+			current_request: MESSAGE
 			current_response: MY_PACKET
+			protocol_handler: PROTOCOL_HANDLER
 		do
 			soc.accept
 			if attached soc.accepted as soc2 then
 				if attached {MY_PACKET} retrieved (soc2) as packet then
-					current_request := packet_processor.process_packet(packet)
+					protocol_handler := packet_processor.process_packet(packet)
 					if
-						current_request.is_valid
+						protocol_handler.is_known
 					then
-						current_response := response_generator.generate_response(current_request)
+						current_response := message_processor.generate_response (protocol_handler)
+					end
+					if
+						not current_response.is_empty
+					then
 						current_response.independent_store (soc2)
 					end
 				end
@@ -88,7 +93,7 @@ feature
 feature
 
 	packet_processor: PACKET_PROCESS_MODULE
-	response_generator: RESPONSE_GENERATE_MODULE
+	message_processor: MESSAGE_PROCESS_MODULE
 	valid_port(port: INTEGER): BOOLEAN
 		do
 			RESULT := (port > 1023)

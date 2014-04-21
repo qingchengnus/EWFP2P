@@ -76,13 +76,13 @@ feature {ANY}
 			RESULT := bytes.at (0) * 256 + bytes.at (1)
 		end
 
-	verify_magic_cookie: BOOLEAN
+	get_magic_cookie: ARRAY[NATURAL_8]
 		local
 			bytes: ARRAY[NATURAL_8]
 		do
 			create bytes.make_from_array (current_packet.subarray (4, 7))
 			bytes.rebase (0)
-			RESULT := bytes.at (0) = 0x21 and bytes.at (1) = 0x12 and bytes.at (2) = 0xA4 and bytes.at (3) = 0x42
+			RESULT := bytes
 		end
 
 	get_transaction_id: STRING

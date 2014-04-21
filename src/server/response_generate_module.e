@@ -5,12 +5,10 @@ note
 	revision: "$Revision$"
 
 class
-	RESPONSE_GENERATE_MODULE
+	MESSAGE_PROCESS_MODULE
 
 feature {ANY}
-	generate_response(request: REQUEST): MY_PACKET
-		require
-			valid_request: request.is_valid
+	generate_response(handler: PROTOCOL_HANDLER): MY_PACKET
 		do
 			create RESULT.make_empty
 		end

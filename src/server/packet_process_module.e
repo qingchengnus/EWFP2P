@@ -13,52 +13,40 @@ feature {ANY}
 	make
 		do
 			create p_validator
-			create r_generator
 		end
-	process_packet(packet: MY_PACKET): REQUEST
+	process_packet(packet: MY_PACKET): PROTOCOL_HANDLER
 		local
 			protocol: INTEGER
+			s_handler: STUN_HANDLER
+			e_handler: EP_HANDLER
+			u_handler: UNKNOWN_HANDLER
+			h_parser: HEADER_PARSER
 		do
 			packet.rebase (0)
+			create h_parser.make_from_packet (packet)
 			if
-				(not validate_packet_length(packet)) or else demultiplex_packet(packet) = -1
+				p_validator.validate_packet (packet)
 			then
-				create RESULT.make_invalid
+				create u_handler.make_from_packet(packet)
+				RESULT := u_handler
 			else
-				protocol := demultiplex_packet(packet)
+				protocol := h_parser.demultiplex
 				if
 					protocol = 0
 				then
-					create RESULT.make_invalid
+					create s_handler.make_from_packet(packet)
+					RESULT := s_handler
+				elseif
+					protocol = 1
+				then
+					create e_handler.make_from_packet(packet)
+					RESULT := e_handler
 				else
-					create RESULT.make_invalid
+					create u_handler.make_from_packet(packet)
+					RESULT := u_handler
 				end
 			end
 		end
 feature {NONE}
 	p_validator: PACKET_VALIDATOR
-	r_generator: REQUEST_GENERATOR
-	validate_packet_length(packet: MY_PACKET): BOOLEAN
-		do
-			RESULT := packet.count >= 20
-		end
-	demultiplex_packet(packet: MY_PACKET): INTEGER
-		local
-			first_byte: NATURAL_8
-			first_two_bits: NATURAL_8
-		do
-			first_byte := packet.at (0)
-			first_two_bits := first_byte.bit_and (0b11000000)
-			if
-				first_two_bits = 0b11000000
-			then
-				RESULT := 1
-			elseif
-				first_two_bits = 0b00000000
-			then
-				RESULT := 0
-			else
-				RESULT := -1
-			end
-		end
 end

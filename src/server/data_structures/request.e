@@ -5,7 +5,7 @@ note
 	revision: "$Revision$"
 
 class
-	REQUEST
+	MESSAGE
 
 create
 	make, make_invalid
