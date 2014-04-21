@@ -14,12 +14,11 @@ feature
 			h_parser: HEADER_PARSER
 		do
 			create h_parser.make_from_packet (packet)
-			RESULT := validate_length(packet, h_parser) and then validate_protocol(h_parser) and then validate_magic_cookie(h_parser)
+			RESULT := validate_length(packet, h_parser) and then validate_protocol(h_parser) and then validate_magic_cookie(h_parser) and then validate_method(h_parser) and then validate_class(h_parser)
 		end
 
 feature {NONE}
 
-	packet_protocol: INTEGER
 
 	validate_length(packet: MY_PACKET h_parser: HEADER_PARSER): BOOLEAN
 		do
@@ -34,7 +33,6 @@ feature {NONE}
 			if
 				protocol = 0 or protocol = 3
 			then
-				packet_protocol := protocol
 				RESULT := true
 			else
 				RESULT := false
@@ -42,15 +40,44 @@ feature {NONE}
 		end
 
 	validate_magic_cookie(h_parser: HEADER_PARSER): BOOLEAN
+		local
+			protocol: INTEGER
 		do
+			protocol := h_parser.demultiplex
+			RESULT := protocol = 3 or else (protocol = 0 and then h_parser.verify_magic_cookie)
+		end
+	validate_method(h_parser: HEADER_PARSER): BOOLEAN
+		local
+			protocol: INTEGER
+			method: INTEGER
+		do
+			protocol := h_parser.demultiplex
+			method := h_parser.get_method
 			if
-				packet_protocol = 0
+				protocol = 0
 			then
-				RESULT := true
+				RESULT := method = 1
+			elseif
+				protocol = 3
+			then
+				RESULT := method = 2 or else method = 3 or else method = 4
 			else
 				RESULT := false
 			end
 		end
 
+	validate_class(h_parser: HEADER_PARSER): BOOLEAN
+		local
+			m_class: INTEGER
+			method: INTEGER
+		do
+			m_class := h_parser.get_class
+			method := h_parser.get_method
+			if
+				method = 1 or else method = 2 or else method = 3 or else method = 4
+			then
+				RESULT := m_class = 0 or else m_class = 2 or else m_class = 3
+			end
+		end
 
 end

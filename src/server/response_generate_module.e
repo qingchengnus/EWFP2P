@@ -9,7 +9,11 @@ class
 
 feature {ANY}
 	generate_response(request: REQUEST): MY_PACKET
+		require
+			valid_request: request.is_valid
 		do
 			create RESULT.make_empty
 		end
+
+feature {NONE}
 end
