@@ -10,11 +10,18 @@ class
 inherit
 	PROTOCOL_HANDLER
 create
-	make_from_packet
+	make_from_packet_and_data
 feature
-	make_from_packet(packet: MY_PACKET)
+	make_from_packet_and_data(packet: MY_PACKET data: detachable NETWORK_SOCKET_ADDRESS)
 		do
 			my_packet := packet
+			if
+				attached data as network_address
+			then
+				n_addr := network_address
+			else
+				create n_addr.make_localhost (-1)
+			end
 			create h_parser.make_from_packet (packet)
 			create b_parser.make_from_packet (packet)
 		end
@@ -38,6 +45,7 @@ feature {NONE}
 	my_packet: MY_PACKET
 	h_parser: HEADER_PARSER
 	b_parser: BODY_PARSER
+	n_addr: NETWORK_SOCKET_ADDRESS
 	validate_magic_cookie: BOOLEAN
 		local
 			protocol: INTEGER

@@ -7,9 +7,6 @@ note
 deferred class
 	PROTOCOL_HANDLER
 feature
-	make_from_packet(packet: MY_PACKET)
-		deferred
-		end
 	generate_response: MY_PACKET
 		deferred
 		end

@@ -21,7 +21,7 @@ feature {NONE} -- Initialization
 		do
 			--| Add your code here
 			create packet_processor.make
-			create message_processor
+			create message_processor.make
 
 			listen(8888, 5)
 		end
@@ -65,24 +65,19 @@ feature
 			soc.accept
 			if attached soc.accepted as soc2 then
 				if attached {MY_PACKET} retrieved (soc2) as packet then
-					protocol_handler := packet_processor.process_packet(packet)
+					protocol_handler := packet_processor.process_packet(packet, soc2.peer_address)
 					if
 						protocol_handler.is_known
 					then
 						current_response := message_processor.generate_response (protocol_handler)
+					else
+						create current_response.make_empty
 					end
 					if
 						not current_response.is_empty
 					then
 						current_response.independent_store (soc2)
 					end
-				end
-
-				if attached soc2.peer_address as net_addr then
-					print("peer ip is ")
-					print(net_addr.host_address.host_address)
-					print("peer port is ")
-					print(net_addr.port)
 				end
 				soc2.close
 

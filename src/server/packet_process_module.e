@@ -14,7 +14,7 @@ feature {ANY}
 		do
 			create p_validator
 		end
-	process_packet(packet: MY_PACKET): PROTOCOL_HANDLER
+	process_packet(packet: MY_PACKET data: detachable NETWORK_SOCKET_ADDRESS): PROTOCOL_HANDLER
 		local
 			protocol: INTEGER
 			s_handler: STUN_HANDLER
@@ -34,7 +34,7 @@ feature {ANY}
 				if
 					protocol = 0
 				then
-					create s_handler.make_from_packet(packet)
+					create s_handler.make_from_packet_and_data(packet, data)
 					RESULT := s_handler
 				elseif
 					protocol = 1
