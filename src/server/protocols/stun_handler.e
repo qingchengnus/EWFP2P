@@ -48,7 +48,6 @@ feature {NONE}
 	n_addr: NETWORK_SOCKET_ADDRESS
 	validate_magic_cookie: BOOLEAN
 		local
-			protocol: INTEGER
 			magic_cookie: ARRAY[NATURAL_8]
 		do
 			magic_cookie := h_parser.get_magic_cookie

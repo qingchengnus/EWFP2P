@@ -58,7 +58,6 @@ feature
 		require
 			soc_not_void: soc /= Void
 		local
-			current_request: MESSAGE
 			current_response: MY_PACKET
 			protocol_handler: PROTOCOL_HANDLER
 		do
