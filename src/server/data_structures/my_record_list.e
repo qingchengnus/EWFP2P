@@ -1,25 +1,20 @@
 note
-	description: "Summary description for {RESPONSE_GENERATE_MODULE}."
+	description: "Summary description for {MY_RECORD_LIST}."
 	author: ""
 	date: "$Date$"
 	revision: "$Revision$"
 
 class
-	MESSAGE_PROCESS_MODULE
+	MY_RECORD_LIST
+
 create
 	make
-feature {ANY}
+
+feature
 	make
 		do
 			create my_record_list.make
 		end
-	generate_response(handler: PROTOCOL_HANDLER): MY_PACKET
-		do
-			create RESULT.make_empty
-		end
-
-feature {NONE}
-	my_record_list: LINKED_LIST[MY_RECORD]
 	find_record(record_id: NATURAL_64): MY_RECORD
 		local
 			found: BOOLEAN
@@ -40,6 +35,7 @@ feature {NONE}
 				my_record_list.forth
 			end
 		end
+feature {MESSAGE_PROCESS_MODULE}
 	add_record(record: MY_RECORD): BOOLEAN
 		local
 			existed_record: MY_RECORD
@@ -54,10 +50,16 @@ feature {NONE}
 				RESULT := true
 			end
 		end
-	edit_record(record_id: NATURAL_64 updated_ipv4_addr: NATURAL_32 updated_port: NATURAL_32): BOOLEAN
+	edit_record(updated_record: MY_RECORD): BOOLEAN
 		local
+			record_id: NATURAL_64
 			found: BOOLEAN
+			updated_ipv4_addr: NATURAL_32
+			updated_port: NATURAL_32
 		do
+			record_id := updated_record.get_id
+			updated_ipv4_addr := updated_record.record_ipv4_addr
+			updated_port := updated_record.record_port
 			from
 				found := false
 				my_record_list.start
@@ -75,4 +77,6 @@ feature {NONE}
 				my_record_list.forth
 			end
 		end
+feature {NONE}
+	my_record_list: LINKED_LIST[MY_RECORD]
 end

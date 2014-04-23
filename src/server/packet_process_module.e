@@ -27,7 +27,7 @@ feature {ANY}
 			if
 				p_validator.validate_packet (packet)
 			then
-				create u_handler.make_from_packet(packet)
+				create u_handler
 				RESULT := u_handler
 			else
 				protocol := h_parser.demultiplex
@@ -42,7 +42,7 @@ feature {ANY}
 					create e_handler.make_from_packet(packet)
 					RESULT := e_handler
 				else
-					create u_handler.make_from_packet(packet)
+					create u_handler
 					RESULT := u_handler
 				end
 			end

@@ -14,7 +14,6 @@ create
 feature
 	make_from_packet_and_data(packet: MY_PACKET data: detachable NETWORK_SOCKET_ADDRESS)
 		do
-			my_packet := packet
 			if
 				attached data as network_address
 			then
@@ -24,10 +23,16 @@ feature
 			end
 			create h_parser.make_from_packet (packet)
 			create b_parser.make_from_packet (packet)
+			my_message := generate_message_from_packet (packet)
 		end
-	generate_response: MY_PACKET
+	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
 		do
 			create RESULT.make_empty
+		end
+	generate_action: ACTION
+		do
+			create RESULT.make_no_action
+			action_notified := true
 		end
 	is_known: BOOLEAN
 		do
@@ -37,12 +42,8 @@ feature
 		do
 			RESULT := validate_magic_cookie and then validate_method and then validate_class
 		end
-	generate_message: MESSAGE
-		do
-			RESULT := current.generate_message_from_packet (my_packet)
-		end
 feature {NONE}
-	my_packet: MY_PACKET
+	my_message: MESSAGE
 	h_parser: HEADER_PARSER
 	b_parser: BODY_PARSER
 	n_addr: NETWORK_SOCKET_ADDRESS

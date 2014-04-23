@@ -9,16 +9,16 @@ class
 
 inherit
 	PROTOCOL_HANDLER
-create
-	make_from_packet
-feature
-	make_from_packet(packet: MY_PACKET)
-		do
 
-		end
-	generate_response: MY_PACKET
+feature
+	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
 		do
 			create RESULT.make_empty
+		end
+	generate_action: ACTION
+		do
+			create RESULT.make_no_action
+			action_notified := true
 		end
 	is_known: BOOLEAN
 		do
@@ -27,9 +27,5 @@ feature
 	validate_message: BOOLEAN
 		do
 			RESULT := false
-		end
-	generate_message: MESSAGE
-		do
-			create RESULT.make_invalid
 		end
 end
