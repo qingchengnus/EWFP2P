@@ -85,24 +85,26 @@ feature {ANY}
 			RESULT := bytes
 		end
 
-	get_transaction_id: STRING
-		local
-			bytes: ARRAY[NATURAL_8]
-			current_nat: NATURAL_32
-			i: INTEGER
+	get_transaction_id: ARRAY[NATURAL_8]
+--		local
+--			bytes: ARRAY[NATURAL_8]
+--			current_nat: NATURAL_32
+--			i: INTEGER
 		do
-			create bytes.make_from_array (current_packet.subarray (8, 19))
-			bytes.rebase (0)
-			create RESULT.make_empty
-			from
-				i := 0
-			until
-				i = 3
-			loop
-				current_nat := bytes[i * 4].as_natural_32 * 256 * 256 * 256 + bytes[i * 4 + 1].as_natural_32 * 256 * 256 + bytes[i * 4 + 2].as_natural_32 * 256 + bytes[i * 4 + 3].as_natural_32;
-				RESULT.append (current_nat.to_hex_string)
-				i := i + 1
-			end
+--			create bytes.make_from_array (current_packet.subarray (8, 19))
+--			bytes.rebase (0)
+--			create RESULT.make_empty
+--			from
+--				i := 0
+--			until
+--				i = 3
+--			loop
+--				current_nat := bytes[i * 4].as_natural_32 * 256 * 256 * 256 + bytes[i * 4 + 1].as_natural_32 * 256 * 256 + bytes[i * 4 + 2].as_natural_32 * 256 + bytes[i * 4 + 3].as_natural_32;
+--				RESULT.append (current_nat.to_hex_string)
+--				i := i + 1
+--			end
+			create RESULT.make_from_array (current_packet.subarray (8, 19))
+			RESULT.rebase (0)
 		end
 
 feature {NONE}

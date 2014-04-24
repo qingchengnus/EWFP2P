@@ -23,11 +23,24 @@ feature
 			end
 			create h_parser.make_from_packet (packet)
 			create b_parser.make_from_packet (packet)
-			my_message := generate_message_from_packet (packet)
+			my_message := packet.generate_message
 		end
 	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
 		do
 			create RESULT.make_empty
+			inspect
+				my_message.message_class
+			when 0 then
+				inspect
+					my_message.method
+				when 1 then
+					create RESULT.make_empty
+				else
+					create RESULT.make_empty
+				end
+			else
+				create RESULT.make_empty
+			end
 		end
 	generate_action: ACTION
 		do

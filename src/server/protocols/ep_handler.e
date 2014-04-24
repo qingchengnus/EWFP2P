@@ -17,7 +17,7 @@ feature
 		do
 			create h_parser.make_from_packet (packet)
 			create b_parser.make_from_packet (packet)
-			my_message := generate_message_from_packet (packet)
+			my_message := packet.generate_message
 		end
 	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
 		do

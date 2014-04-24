@@ -86,10 +86,10 @@ feature -- Test routines
 --			assert ("Magic cookie verification fails.", testee.verify_magic_cookie)
 --		end
 
-	transaction_id_processing_test
-		do
-			assert ("Incorrect transaction id.", testee.get_transaction_id.is_equal ("2AB433686EFFD5670CAC1259"))
-		end
+--	transaction_id_processing_test
+--		do
+--			assert ("Incorrect transaction id.", testee.get_transaction_id.is_equal ("2AB433686EFFD5670CAC1259"))
+--		end
 end
 
 
