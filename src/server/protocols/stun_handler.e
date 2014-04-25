@@ -26,6 +26,14 @@ feature
 			my_message := packet.generate_message
 		end
 	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
+		local
+			response_protocol: INTEGER
+			response_class: INTEGER
+			response_method: INTEGER
+			response_length: INTEGER
+			response_cookie: ARRAY[NATURAL_8]
+			response_transaction_id: ARRAY[NATURAL_8]
+			mapped_addr: MY_ATTRIBUTE
 		do
 			create RESULT.make_empty
 			inspect
@@ -34,6 +42,12 @@ feature
 				inspect
 					my_message.method
 				when 1 then
+					response_protocol := my_message.protocol
+					response_class := 2
+					response_method := my_message.method
+					response_length := 12
+					response_cookie := my_message.magic_cookie
+					response_transaction_id := my_message.transaction_id
 					create RESULT.make_empty
 				else
 					create RESULT.make_empty
