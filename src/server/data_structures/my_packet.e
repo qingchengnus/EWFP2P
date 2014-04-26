@@ -93,4 +93,37 @@ feature
 			end
 
 		end
+	put_in_natural_32(number: NATURAL_32 start: INTEGER)
+		require
+			valid_starting_position: current.valid_index (start) and then current.valid_index (start + 3)
+		local
+			i: INTEGER
+			bits_filter: NATURAL_32
+		do
+			from
+				i := 0
+				bits_filter := 0x000000FF
+			until
+				i = 4
+			loop
+				current.at (start + i) := number.bit_and (bits_filter.bit_shift_left (i * 4)).bit_shift_right (8 * (3 - i)).as_natural_8
+			end
+		end
+
+	put_in_natural_16(number: NATURAL_16 start: INTEGER)
+		require
+			valid_starting_position: current.valid_index (start) and then current.valid_index (start + 1)
+		local
+			i: INTEGER
+			bits_filter: NATURAL_16
+		do
+			from
+				i := 0
+				bits_filter := 0x00FF
+			until
+				i = 2
+			loop
+				current.at (start + i) := number.bit_and (bits_filter.bit_shift_left (i * 4)).bit_shift_right (4 * (1 - i)).as_natural_8
+			end
+		end
 end

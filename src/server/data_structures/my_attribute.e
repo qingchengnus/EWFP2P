@@ -4,14 +4,16 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-deferred class
+class
 	MY_ATTRIBUTE
 
+create
+	make
 feature {ANY}
 	make(a: NATURAL_16 v: ARRAY[NATURAL_8])
 		do
 			attribute_name := a
-			create value.make_from_array (v)
+			value := v
 			if
 				v.count // 4 = 0
 			then
@@ -22,27 +24,31 @@ feature {ANY}
 		end
 	attribute_name: NATURAL_16
 	occupied_length: INTEGER
+	value: ARRAY[NATURAL_8]
+feature {ANY}
+--	get_name_length(packet: ARRAY[NATURAL_8])
+--		do
+--			packet.rebase (0)
+--			attribute_name := packet.at (0).as_natural_16.bit_shift_left (8).bit_or (packet.at (1).as_natural_16)
+--			occupied_length := packet.at (2).as_natural_16.bit_shift_left (8).bit_or (packet.at (3).as_natural_16)
+--		end
 
-	make_from_packet(packet: ARRAY[NATURAL_8])
-		deferred
-		end
 	generate_packet: ARRAY[NATURAL_8]
-		deferred
-		end
-feature {MY_ATTRIBUTE}
-	get_name_length(packet: ARRAY[NATURAL_8])
+		local
+			count: INTEGER
 		do
-			packet.rebase (0)
-			attribute_name := packet.at (0).as_natural_16.bit_shift_left (8).bit_or (packet.at (1).as_natural_16)
-			occupied_length := packet.at (2).as_natural_16.bit_shift_left (8).bit_or (packet.at (3).as_natural_16)
-		end
-
-	generate_packet_with_name_length: ARRAY[NATURAL_8]
-		do
-			create RESULT.make_filled (0, 0, 3)
+			create RESULT.make_filled (0, 0, 3 + occupied_length)
 			RESULT.at (0) := attribute_name.bit_shift_right (8).as_natural_8
 			RESULT.at (1) := attribute_name.bit_and (0x00FF).as_natural_8
-			RESULT.at (2) := attribute_name.bit_shift_right (8).as_natural_8
-			RESULT.at (3) := attribute_name.bit_and (0x00FF).as_natural_8
+			RESULT.at (2) := occupied_length.bit_shift_right (8).as_natural_8
+			RESULT.at (3) := occupied_length.bit_and (0x00FF).as_natural_8
+			from
+				count := 0
+			until
+				count = value.count
+			loop
+				RESULT.at (count + 4) := value.at (count)
+				count := count + 1
+			end
 		end
 end

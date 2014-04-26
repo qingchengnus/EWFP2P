@@ -33,7 +33,13 @@ feature
 			response_length: INTEGER
 			response_cookie: ARRAY[NATURAL_8]
 			response_transaction_id: ARRAY[NATURAL_8]
+			required_attributes: ARRAY[MY_ATTRIBUTE]
+			optional_attributes: ARRAY[MY_ATTRIBUTE]
 			mapped_addr: MY_ATTRIBUTE
+			attr_value: MY_PACKET
+			mapped_ip: NATURAL_32
+			mapped_port: NATURAL_16
+			response_message: MESSAGE
 		do
 			create RESULT.make_empty
 			inspect
@@ -48,7 +54,18 @@ feature
 					response_length := 12
 					response_cookie := my_message.magic_cookie
 					response_transaction_id := my_message.transaction_id
-					create RESULT.make_empty
+					create attr_value.make_filled (0, 0, 7)
+					mapped_ip := n_addr.host_address.ipv4.as_natural_32
+					mapped_port := n_addr.port.as_natural_16
+					attr_value.at (0) := 0
+					attr_value.at (1) := 1
+					attr_value.put_in_natural_16 (mapped_port, 2)
+					attr_value.put_in_natural_32 (mapped_ip, 4)
+					create mapped_addr.make (1, attr_value)
+					create required_attributes.make_filled (mapped_addr, 0, 0)
+					create optional_attributes.make_empty
+					create response_message.make (response_protocol, response_method, response_class, response_cookie, response_transaction_id, required_attributes, optional_attributes)
+					RESULT := response_message.generate_packet
 				else
 					create RESULT.make_empty
 				end
