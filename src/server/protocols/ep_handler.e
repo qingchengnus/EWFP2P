@@ -19,15 +19,15 @@ feature
 			create b_parser.make_from_packet (packet)
 			my_message := packet.generate_message
 			are_attributes_valid := validate_attributes
+			create target_record.make_invalid
 		end
 	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
 		do
 			create RESULT.make_empty
 		end
 	generate_action: ACTION
-		local
-			target_record: MY_RECORD
 		do
+			create RESULT.make_no_action
 			if
 				validate_attributes
 			then
@@ -37,9 +37,14 @@ feature
 					inspect
 						my_message.method
 					when 2 then
-
+						create target_record.make_from_id (id)
+						create RESULT.make (0, target_record)
+					when 3 then
+						create target_record.make (id, key, ip_addr, port)
+						create RESULT.make (1, target_record)
+					when 4 then
+						create RESULT.make_no_action
 					else
-						create target_record.make_from_id (my_message.generate_packet)
 						create RESULT.make_no_action
 					end
 				else
@@ -68,6 +73,7 @@ feature {NONE}
 	ip_addr: NATURAL_32
 	port: NATURAL_32
 	are_attributes_valid: BOOLEAN
+	target_record: MY_RECORD
 	validate_method: BOOLEAN
 		do
 			RESULT := h_parser.get_method = 2 or else h_parser.get_method = 3 or else h_parser.get_method = 4
@@ -109,6 +115,7 @@ feature {NONE}
 	contain_attribute(attributes_list: ARRAY[MY_ATTRIBUTE] target_attribute_name: NATURAL_16): BOOLEAN
 		local
 			i: INTEGER
+			j: INTEGER
 		do
 			from
 				i := 0
@@ -122,7 +129,45 @@ feature {NONE}
 					inspect
 						target_attribute_name
 					when 0x0022 then
-						id := 
+						from
+							id := 0
+							j := 0
+						until
+							j = 8
+						loop
+							id := id.bit_or (attributes_list.at (i).value[j].as_natural_64.bit_shift_left (8 * (7 - j)))
+						end
+					when
+						0x0023
+					then
+						from
+							port := 0
+							j := 0
+						until
+							j = 2
+						loop
+							port := port.bit_or (attributes_list.at (i).value[2 + j].as_natural_32.bit_shift_left (8 * (1 - j)))
+						end
+						from
+							ip_addr := 0
+							j := 0
+						until
+							j = 4
+						loop
+							ip_addr := ip_addr.bit_or (attributes_list.at (i).value[4 + j].as_natural_32.bit_shift_left (8 * (3 - j)))
+						end
+
+					when
+						0x0024
+					then
+						from
+							key := 0
+							j := 0
+						until
+							j = 8
+						loop
+							key := key.bit_or (attributes_list.at (i).value[j].as_natural_64.bit_shift_left (8 * (7 - j)))
+						end
 					else
 
 					end
@@ -130,4 +175,5 @@ feature {NONE}
 				i := i + 1
 			end
 		end
+
 end

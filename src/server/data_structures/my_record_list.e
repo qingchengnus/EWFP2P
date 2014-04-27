@@ -53,11 +53,13 @@ feature {MESSAGE_PROCESS_MODULE}
 	edit_record(updated_record: MY_RECORD): BOOLEAN
 		local
 			record_id: NATURAL_64
+			record_key: NATURAL_64
 			found: BOOLEAN
 			updated_ipv4_addr: NATURAL_32
 			updated_port: NATURAL_32
 		do
 			record_id := updated_record.get_id
+			record_key := updated_record.get_key
 			updated_ipv4_addr := updated_record.record_ipv4_addr
 			updated_port := updated_record.record_port
 			from
@@ -68,7 +70,7 @@ feature {MESSAGE_PROCESS_MODULE}
 				RESULT or my_record_list.after
 			loop
 				if
-					my_record_list.item.get_id = record_id
+					my_record_list.item.get_id = record_id and then my_record_list.item.validate_key (record_key)
 				then
 					my_record_list.item.set_ipv4_addr(updated_ipv4_addr)
 					my_record_list.item.set_port(updated_port)

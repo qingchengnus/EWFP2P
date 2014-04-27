@@ -7,7 +7,7 @@ note
 class
 	MY_RECORD
 create
-	make_from_id, make_invalid
+	make_from_id, make_invalid, make
 feature {ANY}
 	make_from_id(id: NATURAL_64)
 		local
@@ -24,6 +24,14 @@ feature {ANY}
 	make_invalid
 		do
 			is_valid := false
+		end
+	make(id: NATURAL_64 key: NATURAL_64 addr: NATURAL_32 port: NATURAL_32)
+		do
+			record_id := id
+			record_key := key
+			record_ipv4_addr := addr
+			record_port := port
+			is_valid := true
 		end
 	get_id: NATURAL_64
 		do
