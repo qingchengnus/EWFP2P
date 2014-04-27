@@ -106,7 +106,7 @@ feature
 			until
 				i = 4
 			loop
-				current.at (start + i) := number.bit_and (bits_filter.bit_shift_left (i * 4)).bit_shift_right (8 * (3 - i)).as_natural_8
+				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (3 - i)).as_natural_8
 			end
 		end
 
@@ -119,11 +119,28 @@ feature
 		do
 			from
 				i := 0
-				bits_filter := 0x00FF
+				bits_filter := 0xFF00
 			until
 				i = 2
 			loop
-				current.at (start + i) := number.bit_and (bits_filter.bit_shift_left (i * 4)).bit_shift_right (4 * (1 - i)).as_natural_8
+				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (1 - i)).as_natural_8
+			end
+		end
+
+	put_in_natural_64(number: NATURAL_64 start: INTEGER)
+		require
+			valid_starting_position: current.valid_index (start) and then current.valid_index (start + 7)
+		local
+			i: INTEGER
+			bits_filter: NATURAL_64
+		do
+			from
+				i := 0
+				bits_filter := 0xFF00000000000000
+			until
+				i = 8
+			loop
+				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (7 - i)).as_natural_8
 			end
 		end
 end

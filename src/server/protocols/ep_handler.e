@@ -22,8 +22,119 @@ feature
 			create target_record.make_invalid
 		end
 	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
+		local
+			response_protocol: INTEGER
+			response_class: INTEGER
+			response_method: INTEGER
+			response_length: INTEGER
+			response_cookie: ARRAY[NATURAL_8]
+			response_transaction_id: ARRAY[NATURAL_8]
+			required_attributes: ARRAY[MY_ATTRIBUTE]
+			optional_attributes: ARRAY[MY_ATTRIBUTE]
+			error_reason: MY_ATTRIBUTE
+			queried_addr: MY_ATTRIBUTE
+			new_key: MY_ATTRIBUTE
+			attr_value: MY_PACKET
+			queried_ip: NATURAL_32
+			queried_port: NATURAL_16
+			response_message: MESSAGE
+			queried_record: MY_RECORD
 		do
 			create RESULT.make_empty
+			response_protocol := my_message.protocol
+			response_method := my_message.method
+			response_cookie := my_message.magic_cookie
+			response_transaction_id := my_message.transaction_id
+			if
+				action_done
+			then
+
+				inspect
+					my_message.message_class
+				when 0 then
+					inspect
+						my_message.method
+					when 2 then
+						response_class := 2
+						response_length := 8
+						create attr_value.make_filled (0, 0, 3)
+						attr_value.put_in_natural_64 (target_record.get_key, 0)
+						create new_key.make (0x0024, attr_value)
+						create required_attributes.make_filled (new_key, 0, 0)
+					when 3 then
+						response_class := 2
+						response_length := 0
+						create required_attributes.make_empty
+					when 4 then
+						queried_record := record_list.find_record (id)
+						if
+							queried_record.is_valid
+						then
+							response_class := 2
+							response_length := 12
+							create attr_value.make_filled (0, 0, 7)
+							queried_ip := queried_record.record_ipv4_addr
+							queried_port := queried_record.record_port.as_natural_16
+							attr_value.at (0) := 0
+							attr_value.at (1) := 1
+							attr_value.put_in_natural_16 (queried_port, 2)
+							attr_value.put_in_natural_32 (queried_ip, 4)
+							create queried_addr.make (1, attr_value)
+							create required_attributes.make_filled (queried_addr, 0, 0)
+						else
+							response_class := 3
+							response_length := 8
+							create attr_value.make_filled (0, 0, 3)
+							attr_value.put_in_natural_32 (2, 0)
+							create error_reason.make (0x0021, attr_value)
+							create required_attributes.make_filled (error_reason, 0, 0)
+						end
+					else
+						response_class := 3
+						response_length := 8
+						create attr_value.make_filled (0, 0, 3)
+						attr_value.put_in_natural_32 (0x00000000, 0)
+						create error_reason.make (0x0021, attr_value)
+						create required_attributes.make_filled (error_reason, 0, 0)
+					end
+				else
+					response_class := 3
+					response_length := 8
+					create attr_value.make_filled (0, 0, 3)
+					attr_value.put_in_natural_32 (0xFFFFFFFF, 0)
+					create error_reason.make (0x0021, attr_value)
+					create required_attributes.make_filled (error_reason, 0, 0)
+				end
+
+			else
+				response_class := 3
+				response_length := 8
+				create attr_value.make_filled (0, 0, 3)
+
+				inspect
+					my_message.message_class
+				when 0 then
+					inspect
+						my_message.method
+					when 2 then
+						attr_value.put_in_natural_32 (1, 0)
+					when 3 then
+						attr_value.put_in_natural_32 (3, 0)
+					else
+						attr_value.put_in_natural_32 (2, 0)
+					end
+					create error_reason.make (0x0021, attr_value)
+					create required_attributes.make_filled (error_reason, 0, 0)
+
+				else
+					attr_value.put_in_natural_32 (0xFFFFFFFF, 0)
+					create error_reason.make (0x0021, attr_value)
+					create required_attributes.make_filled (error_reason, 0, 0)
+				end
+			end
+			create optional_attributes.make_empty
+			create response_message.make (response_protocol, response_method, response_class, response_cookie, response_transaction_id, required_attributes, optional_attributes)
+			RESULT := response_message.generate_packet
 		end
 	generate_action: ACTION
 		do
@@ -101,7 +212,7 @@ feature {NONE}
 			when 3 then
 				length_correctness := my_message.comprehension_required_attributes.count = 3
 				attr_1_correctness := contain_attribute(my_message.comprehension_required_attributes, 0x0022)
-				attr_2_correctness := contain_attribute(my_message.comprehension_required_attributes, 0x0023)
+				attr_2_correctness := contain_attribute(my_message.comprehension_required_attributes, 0x0001)
 				attr_3_correctness := contain_attribute(my_message.comprehension_required_attributes, 0x0024)
 				RESULT := length_correctness and then attr_1_correctness and then attr_2_correctness and then attr_3_correctness
 			when 4 then
@@ -138,7 +249,7 @@ feature {NONE}
 							id := id.bit_or (attributes_list.at (i).value[j].as_natural_64.bit_shift_left (8 * (7 - j)))
 						end
 					when
-						0x0023
+						0x0001
 					then
 						from
 							port := 0

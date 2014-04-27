@@ -42,18 +42,18 @@ feature
 			response_message: MESSAGE
 		do
 			create RESULT.make_empty
+			response_protocol := my_message.protocol
+			response_method := my_message.method
+			response_cookie := my_message.magic_cookie
+			response_transaction_id := my_message.transaction_id
 			inspect
 				my_message.message_class
 			when 0 then
 				inspect
 					my_message.method
 				when 1 then
-					response_protocol := my_message.protocol
 					response_class := 2
-					response_method := my_message.method
 					response_length := 12
-					response_cookie := my_message.magic_cookie
-					response_transaction_id := my_message.transaction_id
 					create attr_value.make_filled (0, 0, 7)
 					mapped_ip := n_addr.host_address.ipv4.as_natural_32
 					mapped_port := n_addr.port.as_natural_16
