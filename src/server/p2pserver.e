@@ -63,22 +63,28 @@ feature
 		do
 			soc.accept
 			if attached soc.accepted as soc2 then
+				print("A client connected!")
 				if attached {MY_PACKET} retrieved (soc2) as packet then
+					print("A packet received!")
 					protocol_handler := packet_processor.process_packet(packet, soc2.peer_address)
 					if
 						protocol_handler.is_known
 					then
+						print("This is a known protocol!")
 						current_response := message_processor.generate_response (protocol_handler)
 					else
+						print("This is an unknown protocol!")
 						create current_response.make_empty
 					end
 					if
 						not current_response.is_empty
 					then
 						current_response.independent_store (soc2)
+						print("The packet is replied")
 					end
 				end
 				soc2.close
+				print("Disconnected from server")
 
 			end
 		rescue

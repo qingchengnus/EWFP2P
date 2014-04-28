@@ -14,14 +14,8 @@ feature {ANY}
 		do
 			create current_body.make_from_array(pkt)
 			current_body.rebase (0)
-			if
-				current_body.count = 20
-			then
-				create current_body.make_empty
-			else
-				current_body := current_body.subarray (20, current_body.count - 1)
-				current_body.rebase (0)
-			end
+			current_body := current_body.subarray (20, current_body.count - 1)
+			current_body.rebase (0)
 		end
 
 	get_attributes: ARRAY[MY_ATTRIBUTE]

@@ -25,11 +25,13 @@ feature {ANY}
 			packet.rebase (0)
 			create h_parser.make_from_packet (packet)
 			if
-				p_validator.validate_packet (packet)
+				not p_validator.validate_packet (packet)
 			then
+				print("Packet not validated!")
 				create u_handler
 				RESULT := u_handler
 			else
+				print("Packet validated!")
 				protocol := h_parser.demultiplex
 				if
 					protocol = 0

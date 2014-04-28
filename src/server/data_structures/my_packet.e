@@ -24,7 +24,7 @@ feature
 	fill_with_array(fill_from: INTEGER filler: ARRAY[NATURAL_8])
 		require
 			valid_from: current.valid_index (fill_from)
-			valid_filler_length: current.valid_index (fill_from + filler.count)
+			valid_filler_length: current.valid_index (fill_from + filler.count - 1)
 		local
 			counter: INTEGER
 		do

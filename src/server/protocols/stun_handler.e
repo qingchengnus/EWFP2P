@@ -18,6 +18,7 @@ feature
 				attached data as network_address
 			then
 				n_addr := network_address
+				
 			else
 				create n_addr.make_localhost (-1)
 			end
