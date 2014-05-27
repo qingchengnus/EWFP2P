@@ -18,6 +18,9 @@
 			<file_rule>
 				<exclude>^data_structures$</exclude>
 			</file_rule>
+			<file_rule>
+				<exclude>^protocols$</exclude>
+			</file_rule>
 		</cluster>
 	</target>
 </system>
