@@ -58,15 +58,14 @@ feature {ANY}
 			until
 				count = combined_attributes.count
 			loop
-				packet_length := packet_length + combined_attributes.at (count).occupied_length.as_natural_16
+				packet_length := packet_length + combined_attributes.at (count).occupied_length.as_natural_16 + 4
 				count := count + 1
 			end
 
 
 			create RESULT.make_filled (0, 0, packet_length + 19)
 			first_two_bytes := 0
-			first_two_bytes := first_two_bytes.bit_or (current.protocol.as_natural_16.bit_and (0x0002).bit_shift_left (14))
-			first_two_bytes := first_two_bytes.bit_or (current.protocol.as_natural_16.bit_and (0x0001).bit_shift_left (15))
+			first_two_bytes := first_two_bytes.bit_or (current.protocol.as_natural_16.bit_and (0x0003).bit_shift_left (14))
 
 			current_bits := current.message_class.as_natural_16.bit_and (0x0002).bit_shift_left (7)
 			first_two_bytes := first_two_bytes.bit_or (current_bits)

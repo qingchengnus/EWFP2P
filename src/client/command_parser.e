@@ -26,6 +26,8 @@ feature {ANY}
 					command_break_down.after
 				loop
 					params.put (command_break_down.item, i)
+					command_break_down.forth
+					i := i + 1
 				end
 				method := params.at (0)
 				if
@@ -37,8 +39,14 @@ feature {ANY}
 					create params.make_empty
 				end
 
+			elseif
+				command_break_down.count = 1
+			then
+
+				method := command_break_down.at (1)
+				create params.make_empty
 			else
-				method := "unknown"
+				method := "empty command"
 				create params.make_empty
 			end
 		end

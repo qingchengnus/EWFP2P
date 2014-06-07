@@ -15,11 +15,11 @@ feature {ANY}
 			attribute_name := a
 			value := v
 			if
-				v.count // 4 = 0
+				v.count \\ 4 = 0
 			then
 				occupied_length := v.count
 			else
-				occupied_length := v.count // 4 + 1 * 4
+				occupied_length := (v.count // 4 + 1) * 4
 			end
 		end
 	attribute_name: NATURAL_16

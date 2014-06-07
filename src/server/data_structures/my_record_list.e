@@ -46,7 +46,7 @@ feature {MESSAGE_PROCESS_MODULE}
 			then
 				RESULT := false
 			else
-				my_record_list.put (record)
+				my_record_list.force (record)
 				RESULT := true
 			end
 		end

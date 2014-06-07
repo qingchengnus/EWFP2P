@@ -31,7 +31,7 @@ feature {NONE}
 		do
 			protocol := h_parser.demultiplex
 			if
-				protocol = 0 or protocol = 3
+				protocol = 0 or protocol = 1
 			then
 				RESULT := true
 			else

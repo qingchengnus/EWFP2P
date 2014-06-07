@@ -22,7 +22,7 @@ feature {NONE} -- Initialization
 			--| Add your code here
 			create packet_processor.make
 			create message_processor.make
-
+			print("hello")
 			listen(8888, 5)
 		end
 
@@ -63,32 +63,42 @@ feature
 		do
 			soc.accept
 			if attached soc.accepted as soc2 then
-				print("A client connected!")
-				if attached {MY_PACKET} retrieved (soc2) as packet then
-					print("A packet received!")
-					protocol_handler := packet_processor.process_packet(packet, soc2.peer_address)
-					if
-						protocol_handler.is_known
-					then
-						print("This is a known protocol!")
-						current_response := message_processor.generate_response (protocol_handler)
-					else
-						print("This is an unknown protocol!")
-						create current_response.make_empty
-					end
-					if
-						not current_response.is_empty
-					then
-						current_response.independent_store (soc2)
-						print("The packet is replied")
+				print("A client connected!%N")
+				from
+
+				until
+					soc2 = Void
+				loop
+					if attached {MY_PACKET} retrieved (soc2) as packet then
+						print("A packet received!%N")
+						protocol_handler := packet_processor.process_packet(packet, soc2.peer_address)
+						if
+							protocol_handler.is_known
+						then
+							print("This is a known protocol!%N")
+							current_response := message_processor.generate_response (protocol_handler)
+						else
+							print("This is an unknown protocol!%N")
+							create current_response.make_empty
+						end
+						if
+							not current_response.is_empty
+						then
+							current_response.independent_store (soc2)
+							print("The packet is replied%N")
+						else
+							print("The packet is ignored%N")
+						end
 					end
 				end
-				soc2.close
-				print("Disconnected from server")
+
+
+				print("Disconnected from server%N")
 
 			end
 		rescue
-			print("unknow exception happens")
+			print("unknow exception happens%N")
+			soc.close
 		end
 feature
 

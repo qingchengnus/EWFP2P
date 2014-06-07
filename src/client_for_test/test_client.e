@@ -21,6 +21,7 @@ feature {NONE} -- Initialization
 			soc1: detachable NETWORK_STREAM_SOCKET
 			addr: NETWORK_SOCKET_ADDRESS
 		do
+			print("testing!")
 			create soc1.make_client_by_port (8888, "localhost")
 			create addr.make_any_local (9999)
 			soc1.set_address (addr)

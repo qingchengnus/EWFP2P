@@ -58,15 +58,15 @@ feature {ANY}
 			until
 				count = combined_attributes.count
 			loop
-				packet_length := packet_length + combined_attributes.at (count).occupied_length.as_natural_16
+				packet_length := packet_length + combined_attributes.at (count).occupied_length.as_natural_16 + 4
+				print("current attribute length is " + combined_attributes.at (count).occupied_length.to_hex_string);
 				count := count + 1
 			end
 
-
+			print("packet length is " + packet_length.to_hex_string);
 			create RESULT.make_filled (0, 0, packet_length + 19)
 			first_two_bytes := 0
-			first_two_bytes := first_two_bytes.bit_or (current.protocol.as_natural_16.bit_and (0x0002).bit_shift_left (14))
-			first_two_bytes := first_two_bytes.bit_or (current.protocol.as_natural_16.bit_and (0x0001).bit_shift_left (15))
+			first_two_bytes := first_two_bytes.bit_or (current.protocol.as_natural_16.bit_and (0x0003).bit_shift_left (14))
 
 			current_bits := current.message_class.as_natural_16.bit_and (0x0002).bit_shift_left (7)
 			first_two_bytes := first_two_bytes.bit_or (current_bits)
@@ -102,10 +102,11 @@ feature {ANY}
 				RESULT.put (combined_attributes.at (count).value.count.as_natural_16.bit_shift_right (8).as_natural_8, current_pos + 2)
 				RESULT.put (combined_attributes.at (count).value.count.as_natural_16.bit_and (0x00FF).as_natural_8, current_pos + 3)
 				current_pos := current_pos + 4
-
+				print("here");
 				RESULT.fill_with_array (current_pos,  combined_attributes.at (count).value)
 				current_pos := current_pos + combined_attributes.at (count).occupied_length
 				count := count + 1
+				print("there")
 			end
 		end
 

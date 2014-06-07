@@ -40,6 +40,7 @@ feature
 			response_message: MESSAGE
 			queried_record: MY_RECORD
 		do
+			print("EP handler is generating response!%N")
 			create RESULT.make_empty
 			response_protocol := my_message.protocol
 			response_method := my_message.method
@@ -56,8 +57,8 @@ feature
 						my_message.method
 					when 2 then
 						response_class := 2
-						response_length := 8
-						create attr_value.make_filled (0, 0, 3)
+						response_length := 12
+						create attr_value.make_filled (0, 0, 7)
 						attr_value.put_in_natural_64 (target_record.get_key, 0)
 						create new_key.make (0x0024, attr_value)
 						create required_attributes.make_filled (new_key, 0, 0)
@@ -142,6 +143,7 @@ feature
 			if
 				validate_attributes
 			then
+				print("Valid attributes.%N")
 				inspect
 					my_message.message_class
 				when 0 then
@@ -164,6 +166,8 @@ feature
 				action_notified := true
 			else
 				create RESULT.make_no_action
+				action_notified := true
+				print("Invalid attributes.%N")
 			end
 
 		end
@@ -206,8 +210,11 @@ feature {NONE}
 			inspect
 				my_message.method
 			when 2 then
+				print("Number of attribute name is " + my_message.comprehension_required_attributes.count.to_hex_string + ".%N")
 				length_correctness := my_message.comprehension_required_attributes.count = 1
 				attr_1_correctness := contain_attribute(my_message.comprehension_required_attributes, 0x0022)
+				print("Length correctness is " + length_correctness.out + ".%N")
+				print("Attribute 1 correctness is " + attr_1_correctness.out + ".%N")
 				RESULT := length_correctness and attr_1_correctness
 			when 3 then
 				length_correctness := my_message.comprehension_required_attributes.count = 3
@@ -228,11 +235,13 @@ feature {NONE}
 			i: INTEGER
 			j: INTEGER
 		do
+
 			from
 				i := 0
 			until
 				RESULT or else i = attributes_list.count
 			loop
+				print("This attribute name is " + attributes_list.at (i).attribute_name.to_hex_string + ".%N")
 				RESULT := attributes_list.at (i).attribute_name = target_attribute_name
 				if
 					RESULT
@@ -247,6 +256,7 @@ feature {NONE}
 							j = 8
 						loop
 							id := id.bit_or (attributes_list.at (i).value[j].as_natural_64.bit_shift_left (8 * (7 - j)))
+							j := j + 1
 						end
 					when
 						0x0001
@@ -258,6 +268,7 @@ feature {NONE}
 							j = 2
 						loop
 							port := port.bit_or (attributes_list.at (i).value[2 + j].as_natural_32.bit_shift_left (8 * (1 - j)))
+							j := j + 1
 						end
 						from
 							ip_addr := 0
@@ -266,6 +277,7 @@ feature {NONE}
 							j = 4
 						loop
 							ip_addr := ip_addr.bit_or (attributes_list.at (i).value[4 + j].as_natural_32.bit_shift_left (8 * (3 - j)))
+							j := j + 1
 						end
 
 					when
@@ -278,6 +290,7 @@ feature {NONE}
 							j = 8
 						loop
 							key := key.bit_or (attributes_list.at (i).value[j].as_natural_64.bit_shift_left (8 * (7 - j)))
+							j := j + 1
 						end
 					else
 

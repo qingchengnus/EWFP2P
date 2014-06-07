@@ -21,6 +21,7 @@ feature {ANY}
 			act: ACTION
 		do
 			act := handler.generate_action
+			
 			create RESULT.make_empty
 			if
 				act.has_action
