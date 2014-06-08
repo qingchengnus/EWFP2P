@@ -28,8 +28,10 @@ feature {ANY}
 				first_two_bits = 0b11000000
 			then
 				RESULT := 1
+				print("This is an EP packet %N");
 			else
 				RESULT := 0
+				print("This is a STUN packet %N");
 			end
 		end
 

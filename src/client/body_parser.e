@@ -46,7 +46,7 @@ feature {ANY}
 				current_value := current_body.subarray (count + 4, count + 3 + current_length)
 				current_value.rebase (0)
 				create current_attribute.make (current_type, current_value)
-				RESULT.put (current_attribute, i)
+				RESULT.force (current_attribute, i)
 				i := i + 1
 				count := count + 4
 				if

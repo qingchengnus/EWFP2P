@@ -27,6 +27,7 @@ feature {NONE} -- Initialization
 			create message_processor.make
 			state := 0
 			create id.make_empty
+			create key.make_empty
 			my_local_port := -1;
 			from
 				user_command := get_user_command
@@ -35,49 +36,41 @@ feature {NONE} -- Initialization
 				command_parser.method.is_case_insensitive_equal ("exit")
 			loop
 				if
-					command_parser.method.is_case_insensitive_equal ("server")
+					command_parser.method.is_case_insensitive_equal ("register")
 				then
 					create soc1.make_client_by_port (command_parser.params.at (1).to_integer_32, command_parser.params.at (0))
-					state := 1
-					print_feedback("Server address set successfully.", 0)
-				elseif
-					command_parser.method.is_case_insensitive_equal ("bindl")
-				then
+					create addr.make_any_local (command_parser.params.at (2).to_integer_32)
 					if
-						state /= 1
+						soc1 /= Void
 					then
-						print_feedback("Set server address before bind local port.", 1)
-					else
-						create addr.make_any_local (command_parser.params.at (0).to_integer_32)
-						if
-							soc1 /= Void
-						then
-							soc1.set_address (addr)
-							soc1.bind
-							print_feedback("Local port bind to " + command_parser.params.at (0), 0)
-							state := 2
-						end
-
+						soc1.set_address (addr)
+						soc1.bind
+						soc1.connect
+						process(soc1, command_parser)
+						soc1.close
 					end
+--					if
+--						state < 2
+--					then
+--						print_feedback("Set server address and local port before register.", 1)
+--					else
+--						if
+--							soc1 /= Void
+--						then
+--							process(soc1, command_parser)
+--						end
+
+--					end
 				elseif
-					command_parser.method.is_case_insensitive_equal ("connect")
+					command_parser.method.is_case_insensitive_equal ("query")
 				then
+					create soc1.make_client_by_port (command_parser.params.at (1).to_integer_32, command_parser.params.at (0))
 					if
-						state /= 2
+						soc1 /= Void
 					then
-						print_feedback("Set server address and local port before connect to server.", 1)
-					else
-						if
-							soc1 /= Void
-						then
-							soc1.connect
-							state := 3
-							process(soc1)
-							soc1.cleanup
-							state := 2
-
-						end
-
+						soc1.connect
+						process(soc1, command_parser)
+						soc1.close
 					end
 				end
 
@@ -103,7 +96,7 @@ feature {NONE} -- Initialization
                 soc1.cleanup
             end
 		end
-	process(soc1: detachable NETWORK_STREAM_SOCKET)
+	process(soc1: detachable NETWORK_STREAM_SOCKET command: COMMAND_PARSER)
 		require
 			socket_not_void: soc1 /= Void
 		local
@@ -119,44 +112,60 @@ feature {NONE} -- Initialization
 			current_attribute: MY_ATTRIBUTE
 			comprehension_required_attributes: ARRAY [MY_ATTRIBUTE]
 			comprehension_optional_attributes: ARRAY [MY_ATTRIBUTE]
+			feedback: FEEDBACK
 		do
-			from
-				user_command := get_user_command
-				create command_parser.make_from_command (user_command)
-			until
-				command_parser.method.is_case_insensitive_equal ("disconnect")
-			loop
-				if
-					command_parser.method.is_case_insensitive_equal ("register")
-				then
-					magic_cookie := generate_magic_cookie
-					transaction_id := generate_transaction_id
-					identification := generate_identification
-					create comprehension_required_attributes.make_empty
-					create comprehension_optional_attributes.make_empty
-					create current_attribute.make (0x22, identification)
-					comprehension_required_attributes.force (current_attribute, 0)
-					create msg.make (3, 2, 0, magic_cookie, transaction_id, comprehension_required_attributes, comprehension_optional_attributes)
-					pkt := msg.generate_packet
-					pkt.independent_store (soc1)
-					if attached {MY_PACKET} pkt.retrieved (soc1) as packet then
-						print("A packet received!")
-						protocol_handler := packet_processor.process_packet(packet)
-						if
-							protocol_handler.is_known
-						then
-							print("This is a known protocol!")
-							current_response := message_processor.generate_response (protocol_handler)
-						else
-							print("This is an unknown protocol!")
-							create current_response.make_empty
-						end
+			magic_cookie := generate_magic_cookie
+			transaction_id := generate_transaction_id
+			create comprehension_required_attributes.make_empty
+			create comprehension_optional_attributes.make_empty
+			create msg.make_invalid
+			if
+				command.method.is_case_insensitive_equal ("register")
+			then
+
+				identification := generate_identification
+
+				create current_attribute.make (0x22, identification)
+				comprehension_required_attributes.force (current_attribute, 0)
+				create msg.make (3, 2, 0, magic_cookie, transaction_id, comprehension_required_attributes, comprehension_optional_attributes)
+				pkt := msg.generate_packet
+				pkt.independent_store (soc1)
+				if attached {MY_PACKET} pkt.retrieved (soc1) as packet then
+					print("A packet received!")
+					protocol_handler := packet_processor.process_packet(packet)
+					feedback := message_processor.generate_feedback (protocol_handler)
+					if
+						feedback.get_status = 0
+					then
+						state := 3
+						key := feedback.get_data
 					end
+					print_feedback(feedback.get_comment, feedback.get_status)
 				end
-				io.read_line
-				user_command := io.last_string
-				print(user_command);
+			elseif
+				command.method.is_case_insensitive_equal ("query")
+			then
+				identification := convert_string_to_id(command.params.at (2))
+				create current_attribute.make (0x22, identification)
+				comprehension_required_attributes.force (current_attribute, 0)
+				create msg.make (3, 4, 0, magic_cookie, transaction_id, comprehension_required_attributes, comprehension_optional_attributes)
+				pkt := msg.generate_packet
+				pkt.independent_store (soc1)
+				if attached {MY_PACKET} pkt.retrieved (soc1) as packet then
+					print("A packet received!")
+					protocol_handler := packet_processor.process_packet(packet)
+					feedback := message_processor.generate_feedback (protocol_handler)
+					if
+						feedback.get_status = 0
+					then
+						state := 3
+						key := feedback.get_data
+					end
+					print_feedback(feedback.get_comment, feedback.get_status)
+				end
 			end
+
+
 		rescue
 			print ("Server disconnected!%N")
             if soc1 /= Void then
@@ -168,6 +177,7 @@ feature {NONE} -- Initialization
 	message_processor: MESSAGE_PROCESS_MODULE
 	state: INTEGER
 	id: ARRAY[NATURAL_8]
+	key: ARRAY[NATURAL_8]
 	my_local_port: INTEGER
 
 
@@ -259,6 +269,41 @@ feature {NONE} -- Initialization
 				current_byte := random_generator.item // 256
 				RESULT.put(current_byte.to_natural_8, i)
 				random_generator.forth
+				i := i + 1
+			end
+		end
+	convert_id_to_string(from_id: ARRAY[NATURAL_8]): STRING
+		local
+			i: INTEGER
+			length: INTEGER
+		do
+			from
+				i := 0
+				length := from_id.count
+				RESULT := ""
+			until
+				i = length
+			loop
+				RESULT := RESULT + from_id.at (i).out + "-"
+				i := i + 1
+			end
+
+		end
+	convert_string_to_id(from_string: STRING): ARRAY[NATURAL_8]
+		local
+			id_in_bytes: LIST[STRING]
+			i: INTEGER
+		do
+			from_string.trim
+			id_in_bytes := from_string.split ('-')
+			create RESULT.make_filled (0, 0, 15)
+			from
+				i := 0
+				id_in_bytes.start
+			until
+				id_in_bytes.after
+			loop
+				RESULT.put (id_in_bytes.item.to_natural_8, i)
 				i := i + 1
 			end
 		end

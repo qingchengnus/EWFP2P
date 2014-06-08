@@ -60,15 +60,17 @@ feature
 			method := h_parser.get_method
 			message_class := h_parser.get_class
 			transaction_id := h_parser.get_transaction_id
-			length := h_parser.get_length
+			length := h_parser.get_length + 20
 			if
 				length = 20
 			then
+				print("No attributes in this packet!%N")
 				create required_attributes.make_empty
 				create optional_attributes.make_empty
 				create RESULT.make (protocol, method, message_class, h_parser.get_magic_cookie, transaction_id, required_attributes, optional_attributes)
 			else
 				all_attributes := b_parser.get_attributes
+				print(all_attributes.count.out + "attributes in this packet!%N")
 				create required_attributes.make_empty
 				create optional_attributes.make_empty
 				from
@@ -82,12 +84,15 @@ feature
 					if
 						current_attribute.attribute_name >= 0x0000 and current_attribute.attribute_name <= 0x7fff
 					then
-						required_attributes.put (current_attribute, r_count)
+						print("1 required attr added! %N")
+						required_attributes.force (current_attribute, r_count)
 						r_count := r_count + 1
 					else
-						optional_attributes.put (current_attribute, o_count)
+						print("1 optional attr added! %N")
+						optional_attributes.force (current_attribute, o_count)
 						o_count := o_count + 1
 					end
+					counter := counter + 1;
 				end
 				create RESULT.make (protocol, method, message_class, h_parser.get_magic_cookie, transaction_id, required_attributes, optional_attributes)
 			end
@@ -107,6 +112,7 @@ feature
 				i = 4
 			loop
 				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (3 - i)).as_natural_8
+				i := i + 1
 			end
 		end
 
@@ -124,6 +130,7 @@ feature
 				i = 2
 			loop
 				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (1 - i)).as_natural_8
+				i := i + 1
 			end
 		end
 
@@ -141,6 +148,7 @@ feature
 				i = 8
 			loop
 				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (7 - i)).as_natural_8
+				i := i + 1
 			end
 		end
 end

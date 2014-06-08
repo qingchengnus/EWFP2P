@@ -14,15 +14,12 @@ feature {ANY}
 		do
 			attribute_name := a
 			value := v
-			print("value length is " + v.count.to_hex_string)
 			if
 				v.count \\ 4 = 0
 			then
 				occupied_length := v.count
-				print("hehe, occupied length is " + occupied_length.to_hex_string)
 			else
 				occupied_length := (v.count // 4 + 1) * 4
-				print("haha, occupied length is " + occupied_length.to_hex_string)
 			end
 		end
 	attribute_name: NATURAL_16

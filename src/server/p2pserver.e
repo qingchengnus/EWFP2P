@@ -23,7 +23,7 @@ feature {NONE} -- Initialization
 			create packet_processor.make
 			create message_processor.make
 			print("hello")
-			listen(8888, 5)
+			listen(8888, 10)
 		end
 
 
@@ -43,13 +43,14 @@ feature
 			until
 				count = 5
 			loop
+				print("hahahahaha%N")
 				process(socket)
-				count := count + 1
 			end
 			socket.cleanup
 
 		rescue
 			if socket /= Void then
+				print("hehehehhe%N")
 				socket.cleanup
 			end
 		end
@@ -64,41 +65,35 @@ feature
 			soc.accept
 			if attached soc.accepted as soc2 then
 				print("A client connected!%N")
-				from
-
-				until
-					soc2 = Void
-				loop
-					if attached {MY_PACKET} retrieved (soc2) as packet then
-						print("A packet received!%N")
-						protocol_handler := packet_processor.process_packet(packet, soc2.peer_address)
-						if
-							protocol_handler.is_known
-						then
-							print("This is a known protocol!%N")
-							current_response := message_processor.generate_response (protocol_handler)
-						else
-							print("This is an unknown protocol!%N")
-							create current_response.make_empty
-						end
-						if
-							not current_response.is_empty
-						then
-							current_response.independent_store (soc2)
-							print("The packet is replied%N")
-						else
-							print("The packet is ignored%N")
-						end
+				if attached {MY_PACKET} retrieved (soc2) as packet then
+					print("A packet received!%N")
+					protocol_handler := packet_processor.process_packet(packet, soc2.peer_address)
+					if
+						protocol_handler.is_known
+					then
+						print("This is a known protocol!%N")
+						current_response := message_processor.generate_response (protocol_handler)
+					else
+						print("This is an unknown protocol!%N")
+						create current_response.make_empty
+					end
+					if
+						not current_response.is_empty
+					then
+						current_response.independent_store (soc2)
+						print("The packet is replied%N")
+					else
+						print("The packet is ignored%N")
 					end
 				end
 
 
-				print("Disconnected from server%N")
+
 
 			end
+			print("Client disconnected!%N")
 		rescue
 			print("unknow exception happens%N")
-			soc.close
 		end
 feature
 

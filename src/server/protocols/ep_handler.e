@@ -42,7 +42,13 @@ feature
 		do
 			print("EP handler is generating response!%N")
 			create RESULT.make_empty
-			response_protocol := my_message.protocol
+			if
+				my_message.protocol = 1
+			then
+				response_protocol := 3
+			else
+				response_protocol := 0
+			end
 			response_method := my_message.method
 			response_cookie := my_message.magic_cookie
 			response_transaction_id := my_message.transaction_id

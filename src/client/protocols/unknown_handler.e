@@ -11,14 +11,16 @@ inherit
 	PROTOCOL_HANDLER
 
 feature
-	generate_response(action_done: BOOLEAN record_list: MY_RECORD_LIST): MY_PACKET
+	generate_feedback: FEEDBACK
+		local
+			status: INTEGER
+			comment: STRING
+			data: ARRAY[NATURAL_8]
 		do
-			create RESULT.make_empty
-		end
-	generate_action: ACTION
-		do
-			create RESULT.make_no_action
-			action_notified := true
+			status := 2
+			comment := "Received packet uses an unknown protocol!"
+			create data.make_empty
+			create RESULT.make (status, comment, data)
 		end
 	is_known: BOOLEAN
 		do
