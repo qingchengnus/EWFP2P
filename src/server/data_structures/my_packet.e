@@ -111,7 +111,7 @@ feature
 			until
 				i = 4
 			loop
-				current.at (start + i) := number.bit_and (bits_filter.bit_shift_right (i * 8)).bit_shift_right (8 * (3 - i)).as_natural_8
+				current.at (start + i) := number.bit_shift_right ((3 - i) * 8).bit_and (bits_filter).as_natural_8
 				i := i + 1
 			end
 		end

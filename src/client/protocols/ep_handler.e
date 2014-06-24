@@ -174,6 +174,7 @@ feature
 			status: INTEGER
 			comment: STRING
 			data: ARRAY[NATURAL_8]
+			i: INTEGER
 		do
 			status := 2
 			create data.make_empty
@@ -195,7 +196,17 @@ feature
 						when 3 then
 							comment := "TBD"
 						when 4 then
-							comment := "TBD"
+							status := 0
+							data := my_message.comprehension_required_attributes.at (0).value
+							from
+								i := 0
+							until
+								i = data.count
+							loop
+								print("Data: " + data.at (i).out + ".%N")
+								i := i + 1
+							end
+							comment := "Queried id's network address is: " + fetch_ip_address(data) + ":" + fetch_port_number(data).out
 						else
 							comment := "Internal error!"
 						end
@@ -263,7 +274,7 @@ feature {NONE}
 			when 2 then
 				length_correctness := my_message.comprehension_required_attributes.count = 1
 				attr_1_correctness := my_message.message_class = 2 and then contain_attribute(my_message.comprehension_required_attributes, 0x0024)
-				attr_1_correctness := attr_1_correctness or else (my_message.message_class = 2 and then contain_attribute(my_message.comprehension_required_attributes, 0x0021))
+				attr_1_correctness := attr_1_correctness or else (my_message.message_class = 3 and then contain_attribute(my_message.comprehension_required_attributes, 0x0021))
 				RESULT := length_correctness and attr_1_correctness
 			when 3 then
 				length_correctness := my_message.comprehension_required_attributes.count = 3
@@ -273,7 +284,8 @@ feature {NONE}
 				RESULT := length_correctness and then attr_1_correctness and then attr_2_correctness and then attr_3_correctness
 			when 4 then
 				length_correctness := my_message.comprehension_required_attributes.count = 1
-				attr_1_correctness := contain_attribute(my_message.comprehension_required_attributes, 0x0022)
+				attr_1_correctness := my_message.message_class = 2 and then contain_attribute(my_message.comprehension_required_attributes, 0x0023)
+				attr_1_correctness := attr_1_correctness or else (my_message.message_class = 3 and then contain_attribute(my_message.comprehension_required_attributes, 0x0021))
 				RESULT := length_correctness and attr_1_correctness
 			else
 				RESULT := false
@@ -349,4 +361,35 @@ feature {NONE}
 			end
 		end
 
+	fetch_port_number(value: ARRAY[NATURAL_8]):NATURAL_32
+		local
+			i: INTEGER
+		do
+			from
+				RESULT := 0
+				i := 0
+			until
+				i = 4
+			loop
+				RESULT := RESULT + value.at (i).as_natural_32.bit_shift_left ((3 - i) * 8)
+				i := i + 1
+			end
+		end
+
+	fetch_ip_address(value: ARRAY[NATURAL_8]):STRING
+		local
+			i: INTEGER
+		do
+			from
+				RESULT := ""
+				i := 0
+			until
+				i = 4
+			loop
+				RESULT := RESULT + value.at (i + 4).out
+				RESULT := RESULT + "."
+				i := i + 1
+			end
+			RESULT.remove_tail (1)
+		end
 end

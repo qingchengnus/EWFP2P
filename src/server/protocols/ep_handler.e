@@ -10,11 +10,19 @@ class
 inherit
 	PROTOCOL_HANDLER
 create
-	make_from_packet
+	make_from_packet_and_data
 
 feature
-	make_from_packet(packet: MY_PACKET)
+	make_from_packet_and_data(packet: MY_PACKET data: detachable NETWORK_SOCKET_ADDRESS)
 		do
+			if
+				attached data as network_address
+			then
+				n_addr := network_address
+
+			else
+				create n_addr.make_localhost (-1)
+			end
 			create h_parser.make_from_packet (packet)
 			create b_parser.make_from_packet (packet)
 			my_message := packet.generate_message
@@ -36,9 +44,12 @@ feature
 			new_key: MY_ATTRIBUTE
 			attr_value: MY_PACKET
 			queried_ip: NATURAL_32
-			queried_port: NATURAL_16
+			queried_port: NATURAL_32
 			response_message: MESSAGE
 			queried_record: MY_RECORD
+			mapped_addr: MY_ATTRIBUTE
+			mapped_ip: NATURAL_32
+			mapped_port: NATURAL_16
 		do
 			print("EP handler is generating response!%N")
 			create RESULT.make_empty
@@ -81,12 +92,12 @@ feature
 							response_length := 12
 							create attr_value.make_filled (0, 0, 7)
 							queried_ip := queried_record.record_ipv4_addr
-							queried_port := queried_record.record_port.as_natural_16
-							attr_value.at (0) := 0
-							attr_value.at (1) := 1
-							attr_value.put_in_natural_16 (queried_port, 2)
+							queried_port := queried_record.record_port
+							print("Queried ip is " + queried_ip.out + ".%N")
+							print("Queried port is " + queried_port.out + ".%N")
+							attr_value.put_in_natural_32 (queried_port, 0)
 							attr_value.put_in_natural_32 (queried_ip, 4)
-							create queried_addr.make (1, attr_value)
+							create queried_addr.make (0x23, attr_value)
 							create required_attributes.make_filled (queried_addr, 0, 0)
 						else
 							response_class := 3
@@ -144,8 +155,14 @@ feature
 			RESULT := response_message.generate_packet
 		end
 	generate_action: ACTION
+		local
+			mapped_ip: NATURAL_32
+			mapped_port: NATURAL_32
 		do
 			create RESULT.make_no_action
+			mapped_ip := convert_ipv4_addr_to_natural_32(n_addr.host_address.host_address)
+			mapped_port := n_addr.port.as_natural_32
+
 			if
 				validate_attributes
 			then
@@ -157,6 +174,8 @@ feature
 						my_message.method
 					when 2 then
 						create target_record.make_from_id (id)
+						target_record.set_ipv4_addr (mapped_ip)
+						target_record.set_port (mapped_port)
 						create RESULT.make (0, target_record)
 					when 3 then
 						create target_record.make (id, key, ip_addr, port)
@@ -189,6 +208,7 @@ feature {NONE}
 	my_message: MESSAGE
 	h_parser: HEADER_PARSER
 	b_parser: BODY_PARSER
+	n_addr: NETWORK_SOCKET_ADDRESS
 	id: NATURAL_64
 	key: NATURAL_64
 	ip_addr: NATURAL_32
@@ -306,4 +326,23 @@ feature {NONE}
 			end
 		end
 
+	convert_ipv4_addr_to_natural_32(ipv4_addr: STRING):NATURAL_32
+		local
+			addr_in_sections: LIST[STRING]
+			i: INTEGER
+		do
+			ipv4_addr.trim
+			addr_in_sections := ipv4_addr.split ('.')
+			RESULT := 0
+			from
+				i := 0
+				addr_in_sections.start
+			until
+				addr_in_sections.after
+			loop
+				RESULT := RESULT + addr_in_sections.item.to_natural_8.as_natural_32.bit_shift_left ((3 - i) * 8)
+				i := i + 1
+				addr_in_sections.forth
+			end
+		end
 end

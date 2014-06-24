@@ -45,7 +45,7 @@ feature {ANY}
 					protocol = 1
 				then
 					print("An EP handler is returned!%N")
-					create e_handler.make_from_packet(packet)
+					create e_handler.make_from_packet_and_data(packet, data)
 					RESULT := e_handler
 				else
 					create u_handler
